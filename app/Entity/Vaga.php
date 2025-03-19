@@ -45,7 +45,12 @@ class Vaga {
 
         //INSERIR A VAGA NO BANCO
         $obDatabase = new Database('vagas');
-        echo "<pre>"; print_r($obDatabase); echo "</pre>"; exit;
+        $obDatabase->insert([
+            'titulo' => $this->titulo,
+            'descricao' => $this->descricao,
+            'ativo' => $this->ativo,
+            'data' => $this->data
+        ]);
 
         //ATRIBUIR O ID DA VAGA NA INSTANCIA
 
