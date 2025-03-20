@@ -51,16 +51,7 @@ class Database {
         $this->setConnection();
     }
 
-    /**
-     * Método responsável por executar queries dentro do banco de dados
-     * @param string $query
-     * @param array $params
-     * @return PDOStatement
-     */
-    public function execute($query,$params = []) {
-        
-    }
-
+    
     /**
      * Método responsável por criar uma conexão com o banco de dados
      */
@@ -74,6 +65,22 @@ class Database {
     }
 
     /**
+     * Método responsável por executar queries dentro do banco de dados
+     * @param string $query
+     * @param array $params
+     * @return PDOStatement
+     */
+    public function execute($query,$params = []) {
+        try{
+            $statement = $this->connection->prepare($query);
+            $statement->execute($params);
+            return $statement;
+        }catch(PDOException $e) {
+            die("ERROR: ".$e->getMessage());
+        }
+    }
+    
+    /**
      * Método responsável por inserir dados no banco
      * @param array $values [ field => value ]
      * @return integer // o Id inserido
@@ -86,5 +93,29 @@ class Database {
         //MONTA A QUERY
         $query = 'INSERT INTO '.$this->table.' ('.implode(',',$fields).') VALUES ('.implode(',',$binds).')';
 
+        //EXECUTA O INSERT
+        $this->execute($query,array_values($values));
+
+        return $this->connection->lastInsertId();
     }
-}
+
+    /**
+     * Um método responsável por executar consulta no banco
+     * @param string $where
+     * @param string $order
+     * @param string $limit
+     * @return PDOStatement
+     */
+    public function select($where = null, $order = null, $limit = null, $fields = '*') {
+        //DADOS DA QUERY
+        $where = strlen($where) ? 'WHERE '.$where : '';
+        $order = strlen($order) ? 'ORDER BY '.$order : '';
+        $limit = strlen($limit) ? 'LIMIT '.$limit : '';
+
+        //MONTA A QUERY
+        $query = 'SELECT '.$fields.' FROM '.$this->table.' '.$where.' '.$order.' '.$limit;
+    
+        //EXECUTA A QUERY
+        return $this->execute($query);
+    }
+}   
